@@ -13,7 +13,7 @@ import g4p_controls.*;
 
 //TODO: On/Off tone with LoopingTone class
 //TODO: Adjust random initial settings to be a factor of deltaAngle
-//TODO: Multiple channles & notes
+//TODO: Multiple channels & notes
 //TODO: User input to change the duration and period of loop
 
 /*
@@ -98,6 +98,7 @@ i  Note  MIDI
   //Ratio  = new GSlider(this, 500, 59, 200, 100, 15);
   //sdrPeriod.setLocalColorScheme(G4P.RED_SCHEME);
   
+  
   ltControl = new GSlider2D(this, 600, 15, 180, 140);
   ltControl.setLimitsX(180, 60, 480);
   ltControl.setLimitsY(150, 60, 280);
@@ -118,11 +119,14 @@ void draw() {
   
   stroke(255, 0, 0);
   fill(255, 0, 0);
+  
+  loops[0].update();
+  loops[0].draw();
+  /*
   for(int i = 0; i < 7; i++){
     loops[i].update();
-    //loops[i].display();
     loops[i].draw();
-  }  
+  } */ 
 
   textSize(30);
   text("AirTrafficControl", 60, 80);
@@ -136,14 +140,15 @@ void draw() {
   textSize(18);
 
   //MIDI TEST
-  /*
+  
   delay(1200);
    myBus.sendNoteOn(channel, pitch, velocity); // Send a Midi noteOn
    println("ON");
    delay(1000);
    myBus.sendNoteOff(channel, pitch, velocity); // Send a Midi noteOff
    println("OFF");
-   */
+   
+  
 }
 
 void delay(int time) {
@@ -159,6 +164,8 @@ class LoopingTone {
   String name;
   int channel, pitch, velocity;
   int x, y;
+  
+  boolean isOn;
   
 
   float toneOnRatio, period, diameter, angleDelta;
@@ -178,22 +185,31 @@ class LoopingTone {
     period = (int)random(20, 30);
     angle = random(0.0, 2*PI);
     angleDelta = 2*PI/period/fps;
-    
     diameter = 144;
+    
+    isOn = false;
     
     println(period);
   }
   void update() {
     //angle ranges from 2*PI to 0
     angle -= angleDelta;//period/(2*PI);
-    if (angle <= 0) {
-      angle = 2*PI + angle;
-      //myBus.sendNoteOn(channel, pitch, velocity);
-      //println("Note ON");
-    } else if (angle >= toneOnRatio * 2 * PI) {
-      //myBus.sendNoteOff(channel, pitch, velocity);
-      //println("  Note OFF");
+    
+    println(this.name + " angle radians: " + angle);
+    if(angle <= 0.0){
+      angle += 2*PI;
+      if(isOn == false){
+         myBus.sendNoteOn(1, 29, 100);
+         isOn = true;
+         println("A NOTE SHOULD BE TURNED ON!");
+      }
     }
+    /*
+    else if ( isOn && angle >= toneOnRatio * 2 * PI - 2 * PI) {
+      myBus.sendNoteOff(this.channel, this.pitch, this.velocity);
+      println("  " + this.name+" OFF");
+      isOn = false;
+    }*/
   }
 
   void draw() {
@@ -201,7 +217,7 @@ class LoopingTone {
     ellipse(x,y,diameter,diameter);
     rect(x-diameter/2,y-diameter/2, diameter, diameter);
     fill(255, 0, 0);
-    arc(x, y, diameter, diameter, angle, angle+2*PI*toneOnRatio);
+    arc(x, y, diameter, diameter, angle-2*PI*toneOnRatio,angle);
     triangle(x, y-diameter/2, x-6, y-diameter/2-10, x+6, y-diameter/2-10);
     text(name+" "+"  "+nf(period,2,1)+"s  %"+nf(toneOnRatio*100,2,1), x - diameter/2, y + diameter/2 +24);
   }
