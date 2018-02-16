@@ -2,8 +2,8 @@
  * George Shoemaker
  * Intro to Electronic Music Spring 2018
  *
- * Interactive program the generates the notes
- * from Track 2 of Music For Airports by Brian Eno
+ * Interactive program that generates MIDI events
+ * to emulate Track 2 of Music For Airports by Brian Eno.
  *
  * https://teropa.info/loop/#/airports
  */
@@ -35,8 +35,9 @@ int fps;
 
 LoopingTone[] loops; 
 
-GSlider sdrPeriod;
-GSlider sdrRatio;
+//GSlider sdrPeriod;
+//GSlider sdrRatio;
+GSlider2D ltControl;
 
 int swidth;
 int sheight;
@@ -80,8 +81,8 @@ i  Note  MIDI
   
   loops = new LoopingTone[7];
   
-  int y0 = 230;
-  int y1 = 450;
+  int y0 = 265;
+  int y1 = 475;
   loops[0] = new LoopingTone("F2 ", 1, 29, 100, y0);
   loops[1] = new LoopingTone("G#2", 1, 32, 200, y1);
   loops[2] = new LoopingTone("C3 ", 1, 36, 300, y0);
@@ -92,10 +93,17 @@ i  Note  MIDI
   
   
   //changePalette(8,{255,0,0});
-  G4P.setCursor(CROSS);
-  sdrPeriod = new GSlider(this, 500, 3, 200, 100, 15);
-  sdrRatio  = new GSlider(this, 500, 59, 200, 100, 15);
-  sdrPeriod.setLocalColorScheme(G4P.RED_SCHEME);
+  //G4P.setCursor(CROSS);
+  //sdrPeriod = new GSlider(this, 500, 3, 200, 100, 15);
+  //Ratio  = new GSlider(this, 500, 59, 200, 100, 15);
+  //sdrPeriod.setLocalColorScheme(G4P.RED_SCHEME);
+  
+  ltControl = new GSlider2D(this, 600, 15, 180, 140);
+  ltControl.setLimitsX(180, 60, 480);
+  ltControl.setLimitsY(150, 60, 280);
+  ltControl.setEasing(8);
+  ltControl.setNumberFormat(G4P.DECIMAL, 1);
+  //ltControl.drawValue();
 
 }
 
@@ -112,17 +120,18 @@ void draw() {
   fill(255, 0, 0);
   for(int i = 0; i < 7; i++){
     loops[i].update();
-    loops[i].display();
+    //loops[i].display();
+    loops[i].draw();
   }  
 
   textSize(30);
   text("AirTrafficControl", 60, 80);
-  textSize(24);
-  text("Period:",400,60);
-  text("Ratio:", 413,115);
+  textSize(18);
+  //text("Period",450,20);
+  //text("%", 413,115);
   
   noFill();
-  rect(380,20,405,115);
+  //rect(380,10,410,140);
   
   textSize(18);
 
@@ -187,7 +196,7 @@ class LoopingTone {
     }
   }
 
-  void display() {
+  void draw() {
     noFill();
     ellipse(x,y,diameter,diameter);
     rect(x-diameter/2,y-diameter/2, diameter, diameter);
