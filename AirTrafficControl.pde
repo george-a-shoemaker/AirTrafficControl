@@ -8,7 +8,8 @@
  * https://teropa.info/loop/#/airports
  */
 
-import themidibus.*; //Import the library
+import themidibus.*;
+import g4p_controls.*;
 
 //TODO: On/Off tone with LoopingTone class
 //TODO: Adjust random initial settings to be a factor of deltaAngle
@@ -33,6 +34,12 @@ int frame;
 int fps;
 
 LoopingTone[] loops; 
+
+GSlider sdrPeriod;
+GSlider sdrRatio;
+
+int swidth;
+int sheight;
 
 void setup() {
   fps = 30;
@@ -68,12 +75,12 @@ i  Note  MIDI
  */
   //LoopingTone(String name, int channel, int pitch, int x, int y)//
   
-  int swidth = 800;
-  int sheight = 600;
+  swidth = 800;
+  sheight = 600;
   
   loops = new LoopingTone[7];
   
-  int y0 = 200;
+  int y0 = 230;
   int y1 = 450;
   loops[0] = new LoopingTone("F2 ", 1, 29, 100, y0);
   loops[1] = new LoopingTone("G#2", 1, 32, 200, y1);
@@ -82,6 +89,14 @@ i  Note  MIDI
   loops[4] = new LoopingTone("D#3", 1, 39, 500, y0);
   loops[5] = new LoopingTone("F3 ", 1, 41, 600, y1);
   loops[6] = new LoopingTone("G#3", 1, 44, 700, y0);
+  
+  
+  //changePalette(8,{255,0,0});
+  G4P.setCursor(CROSS);
+  sdrPeriod = new GSlider(this, 500, 3, 200, 100, 15);
+  sdrRatio  = new GSlider(this, 500, 59, 200, 100, 15);
+  sdrPeriod.setLocalColorScheme(G4P.RED_SCHEME);
+
 }
 
 void draw() {
@@ -101,11 +116,15 @@ void draw() {
   }  
 
   textSize(30);
-  text("AirTrafficControl", 16, 30);
-  textSize(18);
+  text("AirTrafficControl", 60, 80);
+  textSize(24);
+  text("Period:",400,60);
+  text("Ratio:", 413,115);
   
- 
-
+  noFill();
+  rect(380,20,405,115);
+  
+  textSize(18);
 
   //MIDI TEST
   /*
@@ -171,10 +190,10 @@ class LoopingTone {
   void display() {
     noFill();
     ellipse(x,y,diameter,diameter);
-    //rect(x-diameter/2,y-diameter/2, diameter, diameter);
+    rect(x-diameter/2,y-diameter/2, diameter, diameter);
     fill(255, 0, 0);
     arc(x, y, diameter, diameter, angle, angle+2*PI*toneOnRatio);
     triangle(x, y-diameter/2, x-6, y-diameter/2-10, x+6, y-diameter/2-10);
-    text(name+" "+"  "+nf(period,2,1)+"s  %"+nf(toneOnRatio*100,2,1), x - diameter/2-10, y + diameter/2 +24);
+    text(name+" "+"  "+nf(period,2,1)+"s  %"+nf(toneOnRatio*100,2,1), x - diameter/2, y + diameter/2 +24);
   }
 }
