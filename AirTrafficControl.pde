@@ -11,10 +11,8 @@
 import themidibus.*;
 import g4p_controls.*;
 
-//TODO: On/Off tone with LoopingTone class
-//TODO: Adjust random initial settings to be a factor of deltaAngle
-//TODO: Multiple channels & notes
-//TODO: User input to change the duration and period of loop
+//TODO: On/Off switch
+//TODO: User input to change the duration and period of loop, 2d slider
 
 /*
 i  Note  MIDI
@@ -38,9 +36,13 @@ LoopingTone[] loops;
 //GSlider sdrPeriod;
 //GSlider sdrRatio;
 GSlider2D ltControl;
+GOption on;
+GOption off;
 
 int swidth;
 int sheight;
+
+boolean isPlaying;
 
 void setup() {
   fps = 30;
@@ -48,10 +50,11 @@ void setup() {
   size(800, 600);
   background(0);
   textFont(loadFont("Avenir-HeavyOblique-48.vlw"), 22);
-  
-   frame = 0;
+  isPlaying = false;
+ 
    
   String busName = "MidiBusATC"; //THIS IS THE NAME OF THE BUS FOR ATC
+         //busName = "SimpleSynth virtual input";
 
   println("This Processing program outputs MIDI events thru a port.\n"+
     "To hear sound, a separate application\n"+
@@ -83,13 +86,16 @@ i  Note  MIDI
   
   int y0 = 265;
   int y1 = 475;
-  loops[0] = new LoopingTone("F2 ", 1, 29, 100, y0);
-  loops[1] = new LoopingTone("G#2", 1, 32, 200, y1);
-  loops[2] = new LoopingTone("C3 ", 1, 36, 300, y0);
-  loops[3] = new LoopingTone("C#3", 1, 37, 400, y1);
-  loops[4] = new LoopingTone("D#3", 1, 39, 500, y0);
-  loops[5] = new LoopingTone("F3 ", 1, 41, 600, y1);
-  loops[6] = new LoopingTone("G#3", 1, 44, 700, y0);
+  loops[0] = new LoopingTone("F2 ", 0, 29, 100, y0);
+  loops[1] = new LoopingTone("G#2", 0, 32, 200, y1);
+  loops[2] = new LoopingTone("C3 ", 0, 36, 300, y0);
+  loops[3] = new LoopingTone("C#3", 0, 37, 400, y1);
+  loops[4] = new LoopingTone("D#3", 0, 39, 500, y0);
+  loops[5] = new LoopingTone("F3 ", 0, 41, 600, y1);
+  loops[6] = new LoopingTone("G#3", 0, 44, 700, y0);
+  
+  on  = new GOption(this, 300, 100, 80, 24, "ON");
+  off = new GOption(this, 300, 120, 80, 24, "OFF");
   
   
   //changePalette(8,{255,0,0});
@@ -120,14 +126,6 @@ void draw() {
   stroke(255, 0, 0);
   fill(255, 0, 0);
   
-  loops[0].update();
-  loops[0].draw();
-  /*
-  for(int i = 0; i < 7; i++){
-    loops[i].update();
-    loops[i].draw();
-  } */ 
-
   textSize(30);
   text("AirTrafficControl", 60, 80);
   textSize(18);
@@ -138,15 +136,26 @@ void draw() {
   //rect(380,10,410,140);
   
   textSize(18);
+  
+  //loops[0].update();
+  //loops[0].draw();
+  
+  for(int i = 0; i < 7; i++){
+    loops[i].update();
+    loops[i].draw();
+  } 
+
+ 
 
   //MIDI TEST
-  
+  /*
   delay(1200);
    myBus.sendNoteOn(channel, pitch, velocity); // Send a Midi noteOn
    println("ON");
    delay(1000);
    myBus.sendNoteOff(channel, pitch, velocity); // Send a Midi noteOff
    println("OFF");
+   */
    
   
 }
@@ -179,10 +188,11 @@ class LoopingTone {
     this.name  = name;
     this.channel = channel;
     this.pitch = pitch;
+    this.velocity = 100;
     this.x = x;
     this.y = y;
-    toneOnRatio = random(0.15, 0.25);
-    period = (int)random(20, 30);
+    toneOnRatio = random(0.15, 0.3);
+    period = ((int)random(150, 250))/10.0;
     angle = random(0.0, 2*PI);
     angleDelta = 2*PI/period/fps;
     diameter = 144;
@@ -195,30 +205,48 @@ class LoopingTone {
     //angle ranges from 2*PI to 0
     angle -= angleDelta;//period/(2*PI);
     
-    println(this.name + " angle radians: " + angle);
+    //println(this.name + " angle radians: " + angle);
     if(angle <= 0.0){
       angle += 2*PI;
       if(isOn == false){
-         myBus.sendNoteOn(1, 29, 100);
+         myBus.sendNoteOn(channel, pitch, velocity);
          isOn = true;
-         println("A NOTE SHOULD BE TURNED ON!");
+         //println(name + " is ON");
       }
     }
-    /*
-    else if ( isOn && angle >= toneOnRatio * 2 * PI - 2 * PI) {
+    
+    else if ( isOn && angle <= 2*PI - toneOnRatio * 2 * PI) {
       myBus.sendNoteOff(this.channel, this.pitch, this.velocity);
-      println("  " + this.name+" OFF");
       isOn = false;
-    }*/
+      //println("  "+name + " is OFF");
+    }
   }
 
   void draw() {
     noFill();
+    stroke(255,0,0);
     ellipse(x,y,diameter,diameter);
-    rect(x-diameter/2,y-diameter/2, diameter, diameter);
     fill(255, 0, 0);
-    arc(x, y, diameter, diameter, angle-2*PI*toneOnRatio,angle);
-    triangle(x, y-diameter/2, x-6, y-diameter/2-10, x+6, y-diameter/2-10);
+    stroke(255,0,0);
+    arc(x, y, diameter, diameter, angle + 3*PI/2, angle +2*PI*toneOnRatio + 3*PI/2);
     text(name+" "+"  "+nf(period,2,1)+"s  %"+nf(toneOnRatio*100,2,1), x - diameter/2, y + diameter/2 +24);
+    noStroke();
+    if(isOn){
+      fill(255,255,0);
+      triangle(x, y-diameter/2, x-6, y-diameter/2-10, x+6, y-diameter/2-10);
+      noFill();
+      stroke(255,255,0);
+      rect(x-diameter/2-1,y-diameter/2-1, diameter+2, diameter+2);
+    }
+    else {
+      fill(255,0,0);
+      triangle(x, y-diameter/2, x-6, y-diameter/2-10, x+6, y-diameter/2-10);
+      noFill();
+      stroke(255,0,0);
+      rect(x-diameter/2-1,y-diameter/2-1, diameter+2, diameter+2);
+    }
+    
+   
+    
   }
 }
