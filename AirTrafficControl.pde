@@ -24,6 +24,7 @@ import g4p_controls.*;
 
 //TODO: Set all notes to off on close
 //TODO: User input to change the duration and period of loop, 2d slider
+//TODO: not on at start problem, edit the constructor, some notes should be on at start
 
 
 //GLOBAL DECLARATIONS//
@@ -57,16 +58,16 @@ void setup() {
   busName = "SimpleSynth virtual input";
   busName = "IAC Bus 1";
 
-  println("This Processing program outputs MIDI events thru a port.\n"+
-    "To hear sound, a separate application\n"+
-    "is required to receive and interpret the MIDI events."+
-    "This program expects to use a port named \""+busName+"\".\n"+
-    "If \""+busName+"\" is not available in the list below,\n" +
-    "either configure a port with that name,\n"+
-    "or set the \"busName\" variable to the name of a configured port.");
+  println("-This Processing program outputs MIDI events thru a port.\n"+
+    "-To hear sound, a separate application is required\n"+
+    "  to synthesize the MIDI events.\n"+
+    "- This program expects to use a port named \""+busName+"\".\n"+
+    "-If \""+busName+"\" is not available in the list below,\n" +
+    "  either configure a port with that name,\n"+
+    "  or set the \"busName\" variable to the name of a configured port\n"+
+    "  in the source code.");
   MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
   myBus = new MidiBus(this, -1, busName);
-
 
   //INIT 7 NOTES//
   loops = new LoopingTone[7];
@@ -187,6 +188,7 @@ class LoopingTone {
     angleDelta = 2*PI/period/fps;
     diameter = 144;
 
+    //solve not on at start bug
     ltIsOn = false;
   }
   void update() {
@@ -247,10 +249,11 @@ public class DisposeHandler {
 }
 */
 void exit() {
-   println("Closing sketch");
+   println("Closing sketch...");
     for(int i = 0; i < 7; i++){
       myBus.sendNoteOff(loops[i].channel, loops[i].pitch, loops[i].velocity);
       //println("note "+i+" off");
     }
+    println("All ATC MIDI notes set to off.");
     super.exit();
 }
