@@ -85,11 +85,11 @@ void setup() {
   //isPlaying = true; // !! plan to remove this
   //ON OFF SWITCH SETUP//
   GToggleGroup onOffToggle = new GToggleGroup();
-  toggleOn  = new GOption(this, 100, 100, 80, 24, "ON");
+  toggleOn  = new GOption(this, 60, 100, 80, 24, "ON");
     toggleOn.setLocalColor(2, color(255,0,0));
-  toggleSuspend = new GOption(this, 100, 120, 80, 24, "SUSPEND");
+  toggleSuspend = new GOption(this, 60, 120, 80, 24, "SUSPEND");
     toggleSuspend.setLocalColor(2, color(255,0,0));
-  toggleOff = new GOption(this, 100, 140, 80, 24, "OFF");
+  toggleOff = new GOption(this, 60, 140, 80, 24, "OFF");
    toggleOff.setLocalColor(2, color(255,0,0));
   onOffToggle.addControls(toggleOn, toggleSuspend, toggleOff);
   //DEVICE IS OFF AT START//
@@ -152,6 +152,10 @@ public void handleToggleControlEvents(GToggleControl source, GEvent event) {
       }
     }
   }
+}
+
+//2D SLIDER EVENT HANDLER//
+public void handleSlider2DEvents(GSlider2D slider2d, GEvent event){
   
 }
 
@@ -246,6 +250,7 @@ void exit() {
    println("Closing sketch");
     for(int i = 0; i < 7; i++){
       myBus.sendNoteOff(loops[i].channel, loops[i].pitch, loops[i].velocity);
+      //println("note "+i+" off");
     }
     super.exit();
 }
