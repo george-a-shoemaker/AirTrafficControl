@@ -6,7 +6,17 @@
  * to emulate Track 2 of Music For Airports by Brian Eno.
  *
  * https://teropa.info/loop/#/airports
+ * Eno's OG notes (7)
+ * i  Note  MIDI
+ * 0  F2    29
+ * 1  G#2   32
+ * 2  C3    36
+ * 3  C#3   37
+ * 4  D#3   39
+ * 5  F3    41
+ * 6  G#3   44
  */
+ 
 
 import themidibus.*;
 import g4p_controls.*;
@@ -14,30 +24,14 @@ import g4p_controls.*;
 //TODO: On/Off switch
 //TODO: User input to change the duration and period of loop, 2d slider
 
-/*
-i  Note  MIDI
- 0  F2    29
- 1  G#2   32
- 2  C3    36
- 3  C#3   37
- 4  D#3   39
- 5  F3    41
- 6  G#3   44
- */
+//GLOBAL DECLARATIONS//
 
-MidiBus myBus; // The MidiBus
-int x;
-int y;
-int frame;
-int fps;
-
+MidiBus myBus;
+int x, y, frame, fps;
 LoopingTone[] loops; 
 
-//GSlider sdrPeriod;
-//GSlider sdrRatio;
 GSlider2D ltControl;
-GOption on;
-GOption off;
+GOption onSwitch, offSwitch;
 
 int swidth;
 int sheight;
@@ -45,16 +39,19 @@ int sheight;
 boolean isPlaying;
 
 void setup() {
+  //PROCESSING SETTINGS//
   fps = 30;
   frameRate(fps);
   size(800, 600);
   background(0);
   textFont(loadFont("Avenir-HeavyOblique-48.vlw"), 22);
-  isPlaying = false;
+  swidth = 800;
+  sheight = 600;
  
-   
+  //SETUP MIDI PORT//
   String busName = "MidiBusATC"; //THIS IS THE NAME OF THE BUS FOR ATC
          //busName = "SimpleSynth virtual input";
+         busName = "IAC Bus 1";
 
   println("This Processing program outputs MIDI events thru a port.\n"+
     "To hear sound, a separate application\n"+
@@ -64,26 +61,11 @@ void setup() {
     "either configure a port with that name,\n"+
     "or set the \"busName\" variable to the name of a configured port.");
   MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
-
   myBus = new MidiBus(this, -1, busName);
   
-  /*
-i  Note  MIDI
- 0  F2    29
- 1  G#2   32
- 2  C3    36
- 3  C#3   37
- 4  D#3   39
- 5  F3    41
- 6  G#3   44
- */
-  //LoopingTone(String name, int channel, int pitch, int x, int y)//
   
-  swidth = 800;
-  sheight = 600;
-  
+  //INIT 7 NOTES//
   loops = new LoopingTone[7];
-  
   int y0 = 265;
   int y1 = 475;
   loops[0] = new LoopingTone("F2 ", 0, 29, 100, y0);
@@ -94,34 +76,30 @@ i  Note  MIDI
   loops[5] = new LoopingTone("F3 ", 0, 41, 600, y1);
   loops[6] = new LoopingTone("G#3", 0, 44, 700, y0);
   
-  on  = new GOption(this, 300, 100, 80, 24, "ON");
-  off = new GOption(this, 300, 120, 80, 24, "OFF");
+  
+  //DEVICE IS OFF AT START//
+  isPlaying = false;
+  isPlaying = true; // !! plan to remove this
+  //ON OFF SWITCH SETUP//
+  GToggleGroup onOffToggle = new GToggleGroup();
+  onSwitch  = new GOption(this, 300, 100, 80, 24, "ON");
+  offSwitch = new GOption(this, 300, 120, 80, 24, "OFF");
+  onOffToggle.addControls(onSwitch, offSwitch);
+  offSwitch.setSelected(true);
   
   
-  //changePalette(8,{255,0,0});
-  //G4P.setCursor(CROSS);
-  //sdrPeriod = new GSlider(this, 500, 3, 200, 100, 15);
-  //Ratio  = new GSlider(this, 500, 59, 200, 100, 15);
-  //sdrPeriod.setLocalColorScheme(G4P.RED_SCHEME);
-  
-  
+  // PERIOD & % ON SLIDER SETUP
   ltControl = new GSlider2D(this, 600, 15, 180, 140);
   ltControl.setLimitsX(180, 60, 480);
   ltControl.setLimitsY(150, 60, 280);
   ltControl.setEasing(8);
   ltControl.setNumberFormat(G4P.DECIMAL, 1);
-  //ltControl.drawValue();
 
 }
 
 void draw() {
   //println(++frame);
   background(0);
-
-  int channel = 1;
-  int pitch = 29;
-  int velocity = 100;
-
   
   stroke(255, 0, 0);
   fill(255, 0, 0);
@@ -129,35 +107,27 @@ void draw() {
   textSize(30);
   text("AirTrafficControl", 60, 80);
   textSize(18);
-  //text("Period",450,20);
-  //text("%", 413,115);
-  
-  noFill();
-  //rect(380,10,410,140);
   
   textSize(18);
   
-  //loops[0].update();
-  //loops[0].draw();
+  //UPDATE NOTES ONLY IF DEVICE IS ON
+  if(isPlaying == true){
+    for(int i = 0; i < 7; i++){
+      loops[i].update();
+      loops[i].draw();
+    }
+  }
+  else{ //ATC IS OFF
+    for(int i = 0; i < 7; i++){
+      loops[i].draw();
+    }
+  }
   
-  for(int i = 0; i < 7; i++){
-    loops[i].update();
-    loops[i].draw();
-  } 
-
- 
-
-  //MIDI TEST
-  /*
-  delay(1200);
-   myBus.sendNoteOn(channel, pitch, velocity); // Send a Midi noteOn
-   println("ON");
-   delay(1000);
-   myBus.sendNoteOff(channel, pitch, velocity); // Send a Midi noteOff
-   println("OFF");
-   */
-   
   
+}
+
+void mouseClicked(){
+  //isPlaying = !isPlaying;
 }
 
 void delay(int time) {
@@ -249,4 +219,14 @@ class LoopingTone {
    
     
   }
+  //Event handlers
+  public void ToggleControlEvents(GToggleControl source, GEvent event) {
+    if(source == onSwitch){
+      isPlaying = true;
+    }
+    else if (source == offSwitch){
+      isPlaying = false;
+    }
+  }
+  
 }
