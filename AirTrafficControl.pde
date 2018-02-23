@@ -22,29 +22,26 @@
 import themidibus.*;
 import g4p_controls.*;
 
-//TODO: Set all notes to off on close
 //TODO: User input to change the duration and period of loop, 2d slider
 //TODO: not on at start problem, edit the constructor, some notes should be on at start
-
 
 //GLOBAL DECLARATIONS//
 MidiBus myBus;
 int x, y, frame, fps;
 int swidth, sheight;
-LoopingTone[] loops; 
 
-GSlider2D ltControl;
+int nLoops;
+LoopingTone[] loops;
+GSlider2D[] ltSliders;
+
+//GSlider2D ltControl;
 GOption toggleOn, toggleSuspend, toggleOff;
 
 boolean atcIsOn;
 
-//DisposeHandler dh;
-
-
-
 void setup() {
   //PROCESSING SETTINGS//
-  fps = 30;
+  fps = 36;
   frameRate(fps);
   size(800, 600);
   background(0);
@@ -60,59 +57,49 @@ void setup() {
 
   println("-This Processing program outputs MIDI events thru a port.\n"+
     "-To hear sound, a separate application is required\n"+
-    "  to synthesize the MIDI events.\n"+
-    "- This program expects to use a port named \""+busName+"\".\n"+
+    " to synthesize the MIDI events.\n"+
+    "-This program expects to use a port named \""+busName+"\".\n"+
     "-If \""+busName+"\" is not available in the list below,\n" +
-    "  either configure a port with that name,\n"+
-    "  or set the \"busName\" variable to the name of a configured port\n"+
-    "  in the source code.");
+    " either configure a port with that name,\n"+
+    " or set the \"busName\" variable to the name of a configured port\n"+
+    " in the source code.");
   MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
   myBus = new MidiBus(this, -1, busName);
 
   //INIT 7 NOTES//
-  loops = new LoopingTone[7];
+  nLoops = 7;
+  loops = new LoopingTone[nLoops];
+  ltSliders = new GSlider2D[nLoops];
   int y0 = 265;
   int y1 = 475;
-  loops[0] = new LoopingTone("F2 ", 0, 29, 100, y0);
-  loops[1] = new LoopingTone("G#2", 0, 32, 200, y1);
-  loops[2] = new LoopingTone("C3 ", 0, 36, 300, y0);
-  loops[3] = new LoopingTone("C#3", 0, 37, 400, y1);
-  loops[4] = new LoopingTone("D#3", 0, 39, 500, y0);
-  loops[5] = new LoopingTone("F3 ", 0, 41, 600, y1);
-  loops[6] = new LoopingTone("G#3", 0, 44, 700, y0);
+  loops[0] = new LoopingTone("F2 ", 0, 29, 100, y0, ltSliders[0], this);
+  loops[1] = new LoopingTone("G#2", 0, 32, 200, y1, ltSliders[1], this);
+  loops[2] = new LoopingTone("C3 ", 0, 36, 300, y0, ltSliders[2], this);
+  loops[3] = new LoopingTone("C#3", 0, 37, 400, y1, ltSliders[3], this);
+  loops[4] = new LoopingTone("D#3", 0, 39, 500, y0, ltSliders[4], this);
+  loops[5] = new LoopingTone("F3 ", 0, 41, 600, y1, ltSliders[5], this);
+  loops[6] = new LoopingTone("G#3", 0, 44, 700, y0, ltSliders[6], this);
 
 
-
-  //isPlaying = true; // !! plan to remove this
   //ON OFF SWITCH SETUP//
   GToggleGroup onOffToggle = new GToggleGroup();
   toggleOn  = new GOption(this, 60, 100, 80, 24, "ON");
-    toggleOn.setLocalColor(2, color(255,0,0));
+  toggleOn.setLocalColor(2, color(150, 0, 0));
   toggleSuspend = new GOption(this, 60, 120, 80, 24, "SUSPEND");
-    toggleSuspend.setLocalColor(2, color(255,0,0));
+  toggleSuspend.setLocalColor(2, color(150, 0, 0));
   toggleOff = new GOption(this, 60, 140, 80, 24, "OFF");
-   toggleOff.setLocalColor(2, color(255,0,0));
+  toggleOff.setLocalColor(2, color(150, 0, 0));
   onOffToggle.addControls(toggleOn, toggleSuspend, toggleOff);
   //DEVICE IS OFF AT START//
   atcIsOn = false;
   toggleOff.setSelected(true);
-
-
-  // PERIOD & % ON SLIDER SETUP
-  ltControl = new GSlider2D(this, 600, 15, 180, 140);
-  ltControl.setLimitsX(180, 60, 480);
-  ltControl.setLimitsY(150, 60, 280);
-  ltControl.setEasing(8);
-  ltControl.setNumberFormat(G4P.DECIMAL, 1);
-  
-  //dh = new DisposeHandler(this);
 }
 
 void draw() {
   background(0);
 
-  stroke(255, 0, 0);
-  fill(255, 0, 0);
+  stroke(150, 0, 0);
+  fill(150, 0, 0);
 
   textSize(30);
   text("AirTrafficControl", 60, 80);
@@ -137,18 +124,17 @@ void draw() {
 public void handleToggleControlEvents(GToggleControl source, GEvent event) {
   if (source == toggleOn) {
     atcIsOn = true;
-    for(int i = 0; i < 7; i++) {
-      if(loops[i].ltIsOn == true){
+    for (int i = 0; i < 7; i++) {
+      if (loops[i].ltIsOn == true) {
         myBus.sendNoteOn(loops[i].channel, loops[i].pitch, loops[i].velocity);
       }
     }
-  } else if (source == toggleSuspend){
-     atcIsOn = false;
-  }
-  else if (source == toggleOff) {
+  } else if (source == toggleSuspend) {
     atcIsOn = false;
-    for(int i = 0; i < 7; i++) {
-      if(loops[i].ltIsOn == true){
+  } else if (source == toggleOff) {
+    atcIsOn = false;
+    for (int i = 0; i < 7; i++) {
+      if (loops[i].ltIsOn == true) {
         myBus.sendNoteOff(loops[i].channel, loops[i].pitch, loops[i].velocity);
       }
     }
@@ -156,8 +142,7 @@ public void handleToggleControlEvents(GToggleControl source, GEvent event) {
 }
 
 //2D SLIDER EVENT HANDLER//
-public void handleSlider2DEvents(GSlider2D slider2d, GEvent event){
-  
+public void handleSlider2DEvents(GSlider2D slider2d, GEvent event) {
 }
 
 
@@ -175,7 +160,7 @@ class LoopingTone {
   //in radians
   boolean on;
 
-  LoopingTone(String name, int channel, int pitch, int x, int y) {
+  LoopingTone(String name, int channel, int pitch, int x, int y, GSlider2D slider, PApplet parent) {
     this.name  = name;
     this.channel = channel;
     this.pitch = pitch;
@@ -190,6 +175,17 @@ class LoopingTone {
 
     //solve not on at start bug
     ltIsOn = false;
+
+    slider = new GSlider2D(parent, x-74, y-74, 148, 148);
+
+    //set most colors of the slider to transparent
+    for (int i = 0; i < 16; i++) {
+      slider.setLocalColor(i, color(255, 0));
+    }
+    slider.setLocalColor(6, color(255, 0));
+    slider.setLocalColor(15, color(100, 150));
+
+    slider.setEasing(4);
   }
   void update() {
     //angle descends from 2*PI to 0
@@ -209,51 +205,37 @@ class LoopingTone {
 
   void draw() {
     noFill();
-    stroke(255, 0, 0);
-    ellipse(x, y, diameter, diameter);
-    fill(255, 0, 0);
-    stroke(255, 0, 0);
-    arc(x, y, diameter, diameter, angle + 3*PI/2, angle +2*PI*toneOnRatio + 3*PI/2);
+
+    fill(150, 0, 0);
+    stroke(150, 0, 0);
     text(name+" "+"  "+nf(period, 2, 1)+"s  %"+nf(toneOnRatio*100, 2, 1), x - diameter/2, y + diameter/2 +24);
     noStroke();
     if (ltIsOn) {
-      fill(255, 255, 0);
+      fill(250, 0, 0);
+      arc(x, y, diameter, diameter, angle + 3*PI/2, angle +2*PI*toneOnRatio + 3*PI/2);
       triangle(x, y-diameter/2, x-6, y-diameter/2-10, x+6, y-diameter/2-10);
       noFill();
-      stroke(255, 255, 0);
-      rect(x-diameter/2-1, y-diameter/2-1, diameter+2, diameter+2);
+      stroke(250, 0, 0);
+      ellipse(x, y, diameter, diameter);
+      //rect(x-diameter/2-1, y-diameter/2-1, diameter+2, diameter+2);
     } else {
-      fill(255, 0, 0);
+      fill(120, 0, 0);
       triangle(x, y-diameter/2, x-6, y-diameter/2-10, x+6, y-diameter/2-10);
+      arc(x, y, diameter, diameter, angle + 3*PI/2, angle +2*PI*toneOnRatio + 3*PI/2);      
       noFill();
-      stroke(255, 0, 0);
-      rect(x-diameter/2-1, y-diameter/2-1, diameter+2, diameter+2);
+      stroke(120, 0, 0);
+      ellipse(x, y, diameter, diameter);
+      //rect(x-diameter/2-1, y-diameter/2-1, diameter+2, diameter+2);
     }
   }
 }
 
-/*
-public class DisposeHandler {
-  DisposeHandler(PApplet pa)
-  {
-    pa.registerMethod("dispose", this);
-  }
-   
-  public void dispose()
-  {      
-    println("Closing sketch");
-    for(int i = 0; i < 7; i++){
-      myBus.sendNoteOff(loops[i].channel, loops[i].pitch, loops[i].velocity);
-    }
-  }
-}
-*/
+
 void exit() {
-   println("Closing sketch...");
-    for(int i = 0; i < 7; i++){
-      myBus.sendNoteOff(loops[i].channel, loops[i].pitch, loops[i].velocity);
-      //println("note "+i+" off");
-    }
-    println("All ATC MIDI notes set to off.");
-    super.exit();
+  println("Closing ATC...");
+  for (int i = 0; i < 7; i++) {
+    myBus.sendNoteOff(loops[i].channel, loops[i].pitch, loops[i].velocity);
+  }
+  println("All ATC MIDI notes set to off.");
+  super.exit();
 }
