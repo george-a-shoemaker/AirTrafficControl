@@ -205,15 +205,25 @@ class LoopingTone {
     //angle descends from 2*PI to 0
     angle -= angleDelta;//period/(2*PI);
 
-    if (angle <= 0.0) {
+    if (angle <= 0.0) { //Reset angle 2 * PI
       angle += 2*PI;
-      if (ltIsOn == false) {
+      if (ltIsOn == false) { // Turn note on if it is off
         myBus.sendNoteOn(channel, pitch, velocity);
         ltIsOn = true;
       }
-    } else if ( ltIsOn && angle <= 2*PI - toneOnRatio * 2 * PI) {
-      myBus.sendNoteOff(this.channel, this.pitch, this.velocity);
-      ltIsOn = false;
+      // If note should be off
+    } else if (angle <= 2*PI - toneOnRatio * 2 * PI) {
+      if(ltIsOn){ // turn it off
+        myBus.sendNoteOff(this.channel, this.pitch, this.velocity);
+        ltIsOn = false;
+      }
+      
+    }
+    else { // note should be on
+      if(ltIsOn == false){
+        myBus.sendNoteOn(this.channel, this.pitch, this.velocity);
+        ltIsOn = true;
+      }
     }
   }
 
