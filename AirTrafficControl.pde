@@ -121,7 +121,7 @@ void draw() {
 }
 
 //OFF SWITCH EVENT HANDLER//
-public void handleToggleControlEvents(GToggleControl source, GEvent event) {
+public void handleToggleControlEvents(GToggleControl source,  GEvent event) {
   if (source == toggleOn) {
     atcIsOn = true;
     for (int i = 0; i < 7; i++) {
@@ -143,6 +143,13 @@ public void handleToggleControlEvents(GToggleControl source, GEvent event) {
 
 //2D SLIDER EVENT HANDLER//
 public void handleSlider2DEvents(GSlider2D slider2d, GEvent event) {
+  for(int i = 0; i < nLoops; i++){
+    if(slider2d == loops[i].slider){
+        println("SLIDER EVENT @ " + (i+1));
+        loops[i].toneOnRatio = loops[i].slider.getValueXF();
+        loops[i].period = loops[i].slider.getValueYF();
+    }
+  }
 }
 
 
@@ -159,6 +166,8 @@ class LoopingTone {
   //of the head from the start of the loop
   //in radians
   boolean on;
+  
+  GSlider2D slider;
 
   LoopingTone(String name, int channel, int pitch, int x, int y, GSlider2D slider, PApplet parent) {
     this.name  = name;
@@ -173,21 +182,26 @@ class LoopingTone {
     angleDelta = 2*PI/period/fps;
     diameter = 144;
 
-    //solve not on at start bug
     ltIsOn = false;
 
-    slider = new GSlider2D(parent, x-74, y-74, 148, 148);
+    this.slider = slider;
+    this.slider = new GSlider2D(parent, x-74, y-74, 148, 148);
+    this.slider.setLimitsX(toneOnRatio, 0.0, 1.0);
+    this.slider.setLimitsY(period, 1, 30);
+    
 
     //set most colors of the slider to transparent
     for (int i = 0; i < 16; i++) {
-      slider.setLocalColor(i, color(255, 0));
+      this.slider.setLocalColor(i, color(255, 0));
     }
-    slider.setLocalColor(6, color(255, 0));
-    slider.setLocalColor(15, color(100, 150));
+    this.slider.setLocalColor(6, color(255, 0));
+    this.slider.setLocalColor(15, color(100, 150));
 
-    slider.setEasing(4);
+    this.slider.setEasing(4);
   }
+  
   void update() {
+    angleDelta = 2*PI/period/fps;
     //angle descends from 2*PI to 0
     angle -= angleDelta;//period/(2*PI);
 
@@ -229,7 +243,6 @@ class LoopingTone {
     }
   }
 }
-
 
 void exit() {
   println("Closing ATC...");
