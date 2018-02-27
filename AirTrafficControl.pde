@@ -22,8 +22,12 @@
 import themidibus.*;
 import g4p_controls.*;
 
-//TODO: User input to change the duration and period of loop, 2d slider
-//TODO: not on at start problem, edit the constructor, some notes should be on at start
+//TODO: make note always on or completely off explicit
+//TODO: fix arc not fitting into circle, off by 1 pix
+//TODO: verify that the default notes are "correct"s
+//TODO: change note UI
+//TODO: add 8th looping tone, organize them 1-4 / 5-8
+//TODO: when set to off, set all notes to off
 
 //GLOBAL DECLARATIONS//
 MidiBus myBus;
@@ -145,7 +149,6 @@ public void handleToggleControlEvents(GToggleControl source,  GEvent event) {
 public void handleSlider2DEvents(GSlider2D slider2d, GEvent event) {
   for(int i = 0; i < nLoops; i++){
     if(slider2d == loops[i].slider){
-        println("SLIDER EVENT @ " + (i+1));
         loops[i].toneOnRatio = loops[i].slider.getValueXF();
         loops[i].period = loops[i].slider.getValueYF();
     }
