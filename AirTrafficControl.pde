@@ -24,11 +24,19 @@ import g4p_controls.*;
 
 //TODO: make note always on or completely off explicit
 //TODO: fix arc not fitting into circle, off by 1 pix
-//TODO: verify that the default notes are "correct"s
-//TODO: change note UI
-//TODO: fix mismatched on/off midi note bug (this is a problem in garageband)
+//TODO: verify that the default notes are "correct" w/ Eno's Track 2 Music for airports
+//TODO: build note UI
+//TODO: fix mismatched on/off midi note bug (this is a problem for garageband)
+  // UNTESTED FIX
 //TODO: add 8th looping tone, organize them 1-4 / 5-8
-//TODO: when set to off, set all notes to off
+//TODO: when set to off, "dim" the color of all notes
+  // UNTESTED FIX
+//TODO: channel drop down menu
+//TODO: channel drop down menu changes channel output
+//TODO: Connected to default bus indicator
+//TODO: Bus not found warning
+//TODO: Set output bus name UI
+
 
 //GLOBAL DECLARATIONS//
 MidiBus myBus;
@@ -39,7 +47,6 @@ int nLoops;
 LoopingTone[] loops;
 GSlider2D[] ltSliders;
 
-//GSlider2D ltControl;
 GOption toggleOn, toggleSuspend, toggleOff;
 
 boolean atcIsOn;
@@ -129,18 +136,19 @@ void draw() {
 public void handleToggleControlEvents(GToggleControl source,  GEvent event) {
   if (source == toggleOn) {
     atcIsOn = true;
-    for (int i = 0; i < 7; i++) {
-      if (loops[i].ltIsOn == true) {
-        myBus.sendNoteOn(loops[i].channel, loops[i].pitch, loops[i].velocity);
-      }
-    }
+    //for (int i = 0; i < 7; i++) {
+      //if (loops[i].isOn == true) {
+        //myBus.sendNoteOn(loops[i].channel, loops[i].pitch, loops[i].velocity);
+      //}
+    //}
   } else if (source == toggleSuspend) {
     atcIsOn = false;
   } else if (source == toggleOff) {
     atcIsOn = false;
     for (int i = 0; i < 7; i++) {
-      if (loops[i].ltIsOn == true) {
+      if (loops[i].isOn == true) {
         myBus.sendNoteOff(loops[i].channel, loops[i].pitch, loops[i].velocity);
+        loops[i].isOn = false;
       }
     }
   }
@@ -152,6 +160,7 @@ public void handleSlider2DEvents(GSlider2D slider2d, GEvent event) {
     if(slider2d == loops[i].slider){
         loops[i].toneOnRatio = loops[i].slider.getValueXF();
         loops[i].period = loops[i].slider.getValueYF();
+        break;
     }
   }
 }
@@ -162,7 +171,7 @@ class LoopingTone {
   int channel, pitch, velocity;
   int x, y;
 
-  boolean ltIsOn;
+  boolean isOn;
 
   float toneOnRatio, period, diameter, angleDelta;
 
@@ -186,7 +195,7 @@ class LoopingTone {
     angleDelta = 2*PI/period/fps;
     diameter = 144;
 
-    ltIsOn = false;
+    isOn = false;
 
     this.slider = slider;
     this.slider = new GSlider2D(parent, x-74, y-74, 148, 148);
@@ -211,22 +220,22 @@ class LoopingTone {
 
     if (angle <= 0.0) { //Reset angle 2 * PI
       angle += 2*PI;
-      if (ltIsOn == false) { // Turn note on if it is off
+      if (isOn == false) { // Turn note on if it is off
         myBus.sendNoteOn(channel, pitch, velocity);
-        ltIsOn = true;
+        isOn = true;
       }
       // If note should be off
     } else if (angle <= 2*PI - toneOnRatio * 2 * PI) {
-      if(ltIsOn){ // turn it off
+      if(isOn){ // turn it off
         myBus.sendNoteOff(this.channel, this.pitch, this.velocity);
-        ltIsOn = false;
+        isOn = false;
       }
       
     }
     else { // note should be on
-      if(ltIsOn == false){
+      if(isOn == false){
         myBus.sendNoteOn(this.channel, this.pitch, this.velocity);
-        ltIsOn = true;
+        isOn = true;
       }
     }
   }
@@ -238,7 +247,7 @@ class LoopingTone {
     stroke(150, 0, 0);
     text(name+" "+"  "+nf(period, 2, 1)+"s  %"+nf(toneOnRatio*100, 2, 1), x - diameter/2, y + diameter/2 +24);
     noStroke();
-    if (ltIsOn) {
+    if (isOn) {
       fill(250, 0, 0);
       arc(x, y, diameter, diameter, angle + 3*PI/2, angle +2*PI*toneOnRatio + 3*PI/2);
       triangle(x, y-diameter/2, x-6, y-diameter/2-10, x+6, y-diameter/2-10);
