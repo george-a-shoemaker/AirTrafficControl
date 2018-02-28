@@ -26,6 +26,7 @@ import g4p_controls.*;
 //TODO: fix arc not fitting into circle, off by 1 pix
 //TODO: verify that the default notes are "correct"s
 //TODO: change note UI
+//TODO: fix mismatched on/off midi note bug (this is a problem in garageband)
 //TODO: add 8th looping tone, organize them 1-4 / 5-8
 //TODO: when set to off, set all notes to off
 
