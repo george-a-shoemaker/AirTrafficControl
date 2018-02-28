@@ -191,7 +191,7 @@ class LoopingTone {
     this.slider = slider;
     this.slider = new GSlider2D(parent, x-74, y-74, 148, 148);
     this.slider.setLimitsX(toneOnRatio, 0.0, 1.0);
-    this.slider.setLimitsY(period, 1, 30);
+    this.slider.setLimitsY(period, 0.5, 30);
     
 
     //set most colors of the slider to transparent
