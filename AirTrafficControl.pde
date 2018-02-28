@@ -46,6 +46,7 @@ int swidth, sheight;
 int nLoops;
 LoopingTone[] loops;
 GSlider2D[] ltSliders;
+GDropList channelDL;
 
 GOption toggleOn, toggleSuspend, toggleOff;
 
@@ -105,6 +106,17 @@ void setup() {
   //DEVICE IS OFF AT START//
   atcIsOn = false;
   toggleOff.setSelected(true);
+  
+  //CHANNEL SELECTION DROP LIST SETUP//
+  channelDL = new GDropList(this, 200, 130, 30, 300, 16);
+  String[] channels = new String[16];
+  for(int i = 0; i < channels.length; i++){ channels[i] = ""+(i+1); }
+  channelDL.setItems(channels,0);
+  this.channelDL.setLocalColor(2, color(150, 0,0));
+  this.channelDL.setLocalColor(5, color(20));
+  this.channelDL.setLocalColor(3, color(255,0,0));
+  this.channelDL.setLocalColor(6, color(20));
+  this.channelDL.setLocalColor(16, color(0,255,0));
 }
 
 void draw() {
@@ -116,8 +128,9 @@ void draw() {
   textSize(30);
   text("AirTrafficControl", 60, 80);
   textSize(18);
+  
+  text("channel",180,120);
 
-  textSize(18);
 
   //UPDATE NOTES ONLY IF DEVICE IS ON
   if (atcIsOn == true) {
