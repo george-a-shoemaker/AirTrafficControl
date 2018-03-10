@@ -1,3 +1,9 @@
+/*Consider multiple windows like so
+* https://gist.github.com/atduskgreg/666e46c8408e2a33b09a
+*/
+
+
+
 /*
  * https://teropa.info/loop/#/airports
  * 
@@ -30,6 +36,7 @@ import g4p_controls.*;
 
 
 class ATC {
+  GWindow window;
   int nLoops = 8;
   LoopingTone[] loops = new LoopingTone[nLoops];
   GSlider2D[] ltSliders = new GSlider2D[nLoops];
@@ -44,6 +51,10 @@ class ATC {
   
   
   ATC(MidiBus bus, PApplet parent){
+    window = GWindow.getWindow(parent, "ATC", 100, 100, 800, 600, JAVA2D);
+    window.addDrawHandler(parent, "windowDraw");
+    
+    
     this.bus = bus;
     atcIsOn = false;
     
@@ -101,7 +112,14 @@ class ATC {
   }
   
   
+  
+  
+  
 }
+
+public void windowDraw(PApplet app, GWinData data){
+    app.background(0);
+  }
 
 private class LoopingTone {
   String name;
