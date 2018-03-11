@@ -32,9 +32,6 @@ import g4p_controls.*;
 //TODO: Bus not found warning
 //TODO: Set output bus name UI
 
-
-
-
 class ATC {
   GWindow window;
   int nLoops = 8;
@@ -51,13 +48,16 @@ class ATC {
   
   
   ATC(MidiBus bus, PApplet parent){
-    window = GWindow.getWindow(parent, "ATC", 100, 100, 800, 600, JAVA2D);
-    window.addDrawHandler(parent, "windowDraw");
     
+    window = GWindow.getWindow(parent, "ATC", 100, 100, 800, 600, JAVA2D);
+    window.addData(new GWinData());
+    window.addDrawHandler(parent, "windowDraw");
+    window.addMouseHandler(parent, "windowMouse");
     
     this.bus = bus;
     atcIsOn = false;
     
+    /*
     int y0 = 265;
     int y1 = 475;
     loops[0] = new LoopingTone("F2 ", 0, 29, 100, y0, ltSliders[0], parent);
@@ -68,6 +68,7 @@ class ATC {
     loops[5] = new LoopingTone("F3 ", 0, 41, 300, y1, ltSliders[5], parent);
     loops[6] = new LoopingTone("G#3", 0, 44, 500, y1, ltSliders[6], parent);
     loops[7] = new LoopingTone("NOPE", 0, 1, 700, y1, ltSliders[7], parent);
+    */
     
     //GToggleGroup onOffToggle = new GToggleGroup();
     //toggleOn  = new GOption(this, 60, 100, 80, 24, "ON");
@@ -93,34 +94,19 @@ class ATC {
     //this.channelDL.setLocalColor(16, color(0,255,0));
   }
   
-  void draw(){
-    background(0);
-
-    stroke(150, 0, 0);
-    fill(150, 0, 0);
-
-    textSize(30);
-    text("AirTrafficControl", 60, 80);
-    textSize(18);
-  
-    text("channel",180,120); 
-    
-    for (int i = 0; i < nLoops; i++) {
-      //loops[i].update();
-      loops[i].draw();
-    }
-  }
-  
-  
-  
-  
-  
 }
 
-public void windowDraw(PApplet app, GWinData data){
-    app.background(0);
-  }
+ public void windowDraw(PApplet appc, GWinData data){
+    appc.background(250, 0, 0);
 
+    appc.stroke(150, 0, 0);
+    appc.rect(100, 100, 50, 50);
+}
+
+public void windowMouse(PApplet applet, GWinData windata, MouseEvent mouseevent) {
+
+}
+ 
 private class LoopingTone {
   String name;
   int channel, pitch, velocity;
@@ -200,7 +186,7 @@ private class LoopingTone {
 
     fill(150, 0, 0);
     stroke(150, 0, 0);
-    text(name+" "+"  "+nf(period, 2, 1)+"s  %"+nf(toneOnRatio*100, 2, 1), x - diameter/2, y + diameter/2 +24);
+    text(name+" "+"  "+ nf(period, 2, 1)+"s  %"+nf(toneOnRatio*100, 2, 1), x - diameter/2, y + diameter/2 +24);
     noStroke();
     if (isOn) {
       fill(250, 0, 0);
