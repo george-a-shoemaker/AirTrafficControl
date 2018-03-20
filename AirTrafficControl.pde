@@ -188,7 +188,6 @@ public void handleSlider2DEvents(GSlider2D slider2d, GEvent event) {
         break;
     }
   }
-  for(int i = 0; i< 
 }
 
 
