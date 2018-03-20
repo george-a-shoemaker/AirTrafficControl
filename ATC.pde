@@ -1,41 +1,54 @@
+//TODO: make note always on or completely off explicit
+//TODO: fix arc not fitting into circle, off by 1 pix
+//TODO: build note UI
+//TODO: fix mismatched on/off midi note bug (this is a problem for garageband)
+  // UNTESTED FIX
 
-
+//TODO: channel knob
+//TODO: channel drop down menu changes channel output
 
 public class ATC{
-  PApplet parent;
+  
+  PApplet parent; // The PApplet that created the instance of ATC 
+  GWindow win;    // The PApplet that ATC creates for itself
+  int fps1; //36
  
-  MidiBus bus;
-  int nNotes;
-  LoopingNote[] notes;
-  boolean isOn;
-  String outputBuses[];
-  String currentOutput;
+  MidiBus bus;    // MidiBus instance (specified in constructor)
+  int nNotes;     // 8
+  LoopingNote[] notes;  // Array of 8
+  boolean isOn;         // Initially set to false
+  String outputBuses[]; // Array of available output buses
+  String currentOutput; // Initially outputBuses[0]
   
-  //GUI
-  GSlider2D[] noteSliders;
-  // Channel knob
+  
+  
   GOption toggleOn, toggleSuspend, toggleOff;
-  // HELP BUTTON
+  GToggleGroup onOffToggle; 
   
   
-  GWindow win;
+ 
   
   ATC(PApplet parent, MidiBus bus) {
     
-    this.parent = parent; // The PApplet that created the instance of ATC //<>//
-    this.bus = bus; //<>//
-    nNotes = 8; //<>//
-    notes = new LoopingNote[8]; //<>//
-    isOn = false; //<>//
-    refreshBusOutputs(); //set busNames array //<>//
-    currentOutput = outputBuses[0]; //<>//
-    bus.addOutput(currentOutput); //<>//
+    this.parent = parent; 
+    this.bus = bus; 
+    nNotes = 8; 
+    notes = new LoopingNote[8]; 
+    isOn = false; 
+    refreshBusOutputs(); //set busNames array 
+    currentOutput = outputBuses[0]; 
+    bus.addOutput(currentOutput); 
     
+    println(fps1);
+   
     
-    win = GWindow.getWindow(parent, "AirTrafficControl", 100, 100, 800, 600, JAVA2D); //<>//
+    fps1 = 36;
+    win = GWindow.getWindow(parent, "AirTrafficControl", 100, 100, 800, 600, JAVA2D); 
+    //println("THE WINDOW FRAME RATE IS "+ win.frameRate);
     win.loop();
+    win.frameRate(36);
     win.setActionOnClose(G4P.CLOSE_WINDOW);
-    win.addData(new ATC_GWinData()); //<>//
+    win.addData(new ATC_GWinData()); 
     ((ATC_GWinData)win.data).atc = this; //Attach instance of ATC to window data
     
     win.textFont(loadFont("Avenir-HeavyOblique-48.vlw"), 22);
@@ -43,9 +56,6 @@ public class ATC{
     win.addDrawHandler(parent, "ATC_winDraw");
     textFont(loadFont("Avenir-HeavyOblique-48.vlw"), 22);
     
-    //GUI
-    noteSliders = new GSlider2D[nNotes];
-    GToggleGroup onOffToggle;
     
     int y0 = 265;
     int y1 = 475;
@@ -68,7 +78,7 @@ public class ATC{
     onOffToggle.addControls(toggleOn, toggleSuspend, toggleOff);
   }
   
-  void draw(){
+  synchronized void draw(){
     win.background(0);
 
     win.stroke(150, 0, 0);
@@ -76,22 +86,23 @@ public class ATC{
 
     win.textSize(30);
     win.text("AirTrafficControl", 60, 80);
+    win.text(fps1, 400, 80);
+    win.text(win.frameRate, 400, 110);
     win.textSize(18);
   
     win.text("channel",180,120);
     
-    //UPDATE NOTES ONLY IF DEVICE IS ON
-    if (atcIsOn == true) {
-      for (int i = 0; i < 7; i++) {
+    ////UPDATE NOTES ONLY IF DEVICE IS ON
+    if (isOn == true) {
+      for (int i = 0; i < nNotes; i++) {
         notes[i].update();
         notes[i].draw();
       }
     } else { //ATC is off
-      for (int i = 0; i < 7; i++) {
+      for (int i = 0; i < nNotes; i++) {
         notes[i].draw();
-    }
-  }
-    
+      }
+    }    
   }
   
   private void refreshBusOutputs(){
@@ -113,7 +124,7 @@ synchronized public void ATC_winDraw(PApplet appc, GWinData data) {
   ATC_GWinData data1 = (ATC_GWinData)data;
   data1.atc.draw();
 }
- //<>//
+ 
 class ATC_GWinData extends GWinData {
   ATC atc;  
 }
@@ -123,7 +134,7 @@ class ATC_GWinData extends GWinData {
 
 
 
-class LoopingNote {
+private class LoopingNote {
   GWindow win;
   String name;
   int channel, pitch, velocity;
@@ -150,15 +161,16 @@ class LoopingNote {
     this.y = y;
     toneOnRatio = random(0.2, 0.35);
     period = ((int)random(150, 250))/10.0;
+    //println("period "+period);
     angle = random(0.0, 2*PI);
-    angleDelta = 2*PI/period/fps;
+    angleDelta = 2*PI/period/36.0;
     diameter = 144;
 
     isOn = false;
     
     slider = new GSlider2D(this.win, x-74, y-74, 148, 148);
     slider.setLimitsX(toneOnRatio, 0.0, 1.0);
-    slider.setLimitsY(period, 0.5, 30);
+    slider.setLimitsY(period, 0.5, 30.0);
     
     for (int i = 0; i < 16; i++) {
       slider.setLocalColor(i, color(255, 0));
@@ -170,8 +182,8 @@ class LoopingNote {
     
   }
   
-  void update() {
-    angleDelta = 2*PI/period/fps;
+  synchronized void update() {
+    angleDelta = 2*PI/period/win.frameRate;
     //angle descends from 2*PI to 0
     angle -= angleDelta;//period/(2*PI);
 
@@ -196,7 +208,7 @@ class LoopingNote {
       }
     }
   }
-   void draw() {
+   synchronized void draw() {
     win.noFill();
 
     win.fill(150, 0, 0);
