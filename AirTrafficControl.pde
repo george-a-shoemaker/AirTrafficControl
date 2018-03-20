@@ -89,13 +89,13 @@ void draw() {
   fill(150, 0, 0);
 
   textSize(30);
-  text("ATC Launcher", 120, 40
-  text("Using Bus: \"" + busName + "\"");
+  text("ATC Launcher", 120, 40);
   textSize(18);
   
   
   fill(255);
-  text(frameRate, 100, 100);
+  text(frameRate, 100, 80);
+  text("Using Bus: \"" + busName + "\"", 100, 110);
   addButton.Draw();
   
   if (addButton.MouseIsOver()) {
