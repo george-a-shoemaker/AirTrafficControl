@@ -13,8 +13,10 @@ public class ATC{
   GWindow win;    // The PApplet that ATC creates for itself
   int fps1; //36
  
+ 
   MidiBus bus;    // MidiBus instance (specified in constructor)
-  int nNotes;     // 8
+  private int channel;  // 1
+  int nNotes;           // 8
   LoopingNote[] notes;  // Array of 8
   boolean isOn;         // Initially set to false
   String outputBuses[]; // Array of available output buses
@@ -31,6 +33,7 @@ public class ATC{
   ATC(PApplet parent, MidiBus bus) {
     
     this.parent = parent; 
+    this.channel = 1;
     this.bus = bus; 
     nNotes = 8; 
     notes = new LoopingNote[8]; 
@@ -59,14 +62,14 @@ public class ATC{
     
     int y0 = 265;
     int y1 = 475;
-    notes[0] = new LoopingNote("F2 ", 0, 29, 100, y0, win);
-    notes[1] = new LoopingNote("G#2", 0, 32, 300, y0, win);
-    notes[2] = new LoopingNote("C3 ", 0, 36, 500, y0, win);
-    notes[3] = new LoopingNote("C#3", 0, 37, 700, y0, win);
-    notes[4] = new LoopingNote("D#3", 0, 39, 100, y1, win);
-    notes[5] = new LoopingNote("F3 ", 0, 41, 300, y1, win);
-    notes[6] = new LoopingNote("G#3", 0, 44, 500, y1, win);
-    notes[7] = new LoopingNote("-- ", 0, 44, 700, y1, win);
+    notes[0] = new LoopingNote("F2 ", channel, 29, 100, y0, win);
+    notes[1] = new LoopingNote("G#2", channel, 32, 300, y0, win);
+    notes[2] = new LoopingNote("C3 ", channel, 36, 500, y0, win);
+    notes[3] = new LoopingNote("C#3", channel, 37, 700, y0, win);
+    notes[4] = new LoopingNote("D#3", channel, 39, 100, y1, win);
+    notes[5] = new LoopingNote("F3 ", channel, 41, 300, y1, win);
+    notes[6] = new LoopingNote("G#3", channel, 44, 500, y1, win);
+    notes[7] = new LoopingNote("-- ", channel, 44, 700, y1, win);
     
     onOffToggle = new GToggleGroup();
     toggleOn = new GOption(win, 60, 100, 80, 24, "ON");
@@ -90,7 +93,7 @@ public class ATC{
     win.text(win.frameRate, 400, 110);
     win.textSize(18);
   
-    win.text("channel",180,120);
+    win.text("channel: "+notes[1].channel,180,120);
     
     ////UPDATE NOTES ONLY IF DEVICE IS ON
     if (isOn == true) {
@@ -110,6 +113,15 @@ public class ATC{
     int n = MidiBus.availableInputs().length;
     if (n > 16) n = 16;
     System.arraycopy(MidiBus.availableInputs(), 0, outputBuses, 0, n);
+  }
+  
+  public void setChannel(int c){
+    if (c >= 16 || c < 0){
+      return;
+    }
+    for(int i = 0; i < notes.length; i++){
+       notes[i].channel = c;
+    }
   }
 }
 

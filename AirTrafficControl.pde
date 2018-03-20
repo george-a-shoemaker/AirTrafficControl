@@ -30,35 +30,33 @@ import g4p_controls.*;
 //GWindow helpWindow;
 
 MidiBus myBus;
+String busName; //THIS IS THE NAME OF THE BUS FOR ATC
 int x, y, frame, fps;
 int swidth, sheight;
 
 ArrayList<GWindow> windows; 
+ArrayList<ATC> atcList;
 
-//int nLoops;
-//LoopingNote1[] loops;
-//GSlider2D[] ltSliders;
-//GDropList channelDL;
+ATC atc, atc1;
 
-//GOption toggleOn, toggleSuspend, toggleOff;
-
-//boolean atcIsOn;
-
-ATC atc;
+Button addButton;
 
 void setup() {
+  
+  addButton = new Button("+1 ATC", 50,140,100,50);
   
   //PROCESSING SETTINGS//
   fps = 2;
   frameRate(fps);
-  size(800, 600);
+  
   background(0);
   swidth  = 300;
   sheight = 200;
+  size(300, 200);
   textFont(loadFont("Avenir-HeavyOblique-48.vlw"), 22);
 
   //SETUP MIDI PORT//
-  String busName; //THIS IS THE NAME OF THE BUS FOR ATC
+
   busName = "MidiBusATC"; 
   busName = "SimpleSynth virtual input";
   busName = "IAC Bus 1";
@@ -75,25 +73,43 @@ void setup() {
   
   myBus = new MidiBus(this, -1, busName);
   
-  atc = new ATC(this, myBus);
+  atc  = new ATC(this, myBus);
+  atc1 = new ATC(this, myBus);
+  atc1.setChannel(2);
   windows = new ArrayList<GWindow>();
   windows.add(atc.win);
+  windows.add(atc1.win);
 }
 
 void draw() {
+  
   background(0);
 
   stroke(150, 0, 0);
   fill(150, 0, 0);
 
   textSize(30);
-  text("ATC Launcher", 60, 80);
+  text("ATC Launcher", 120, 40
+  text("Using Bus: \"" + busName + "\"");
   textSize(18);
   
   
   fill(255);
   text(frameRate, 100, 100);
+  addButton.Draw();
+  
+  if (addButton.MouseIsOver()) {
+    rect(200, 20, 50, 50);
+  }
 }
+
+void mousePressed()
+{
+  if (addButton.MouseIsOver()) {
+    
+  }
+}
+
 
 //OFF SWITCH EVENT HANDLER//
 public void handleToggleControlEvents(GToggleControl source,  GEvent event) {
