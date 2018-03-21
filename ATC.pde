@@ -27,6 +27,10 @@ public class ATC{
   GOption toggleOn, toggleSuspend, toggleOff;
   GToggleGroup onOffToggle; 
   
+  GOption enabledOpts[];
+  GToggleGroup enabledToggle;
+  
+  
   
  
   
@@ -70,6 +74,7 @@ public class ATC{
     notes[5] = new LoopingNote("F3 ", channel, 41, 300, y1, win);
     notes[6] = new LoopingNote("G#3", channel, 44, 500, y1, win);
     notes[7] = new LoopingNote("-- ", channel, 44, 700, y1, win);
+    notes[7].disabled = true;
     
     onOffToggle = new GToggleGroup();
     toggleOn = new GOption(win, 60, 100, 80, 24, "ON");
@@ -79,6 +84,16 @@ public class ATC{
     toggleOff = new GOption(win, 60, 140, 80, 24, "OFF");
     toggleOff.setLocalColor(2, color(150, 0, 0));
     onOffToggle.addControls(toggleOn, toggleSuspend, toggleOff);
+    
+    //enabledToggle = new GToggleGroup();
+    enabledOpts = new GOption[nNotes];
+    
+    int xx = 550;
+    int yy = 100;
+    for(int i = 0; i<4; i++){
+      enabledOpts[i] = new GOption(win, xx + i*20, yy, 10, 10);
+      enabledOpts[i+4] = new GOption(win, xx + i*20, yy+20, 10, 10);
+    }
   }
   
   synchronized void draw(){
@@ -152,18 +167,19 @@ private class LoopingNote {
   int channel, pitch, velocity;
   int x, y;
 
-  boolean isOn;
+  boolean disabled;
 
   float toneOnRatio, period, diameter, angleDelta;
 
   float angle; //this is the relative angle
   //of the head from the start of the loop
   //in radians
-  boolean on;
+  boolean isOn;
   
   GSlider2D slider;
   
   LoopingNote(String name, int channel, int pitch, int x, int y, PApplet win) {
+    this.disabled = false;
     this.win = (GWindow)win;
     this.name  = name;
     this.channel = channel;
@@ -182,7 +198,7 @@ private class LoopingNote {
     
     slider = new GSlider2D(this.win, x-74, y-74, 148, 148);
     slider.setLimitsX(toneOnRatio, 0.0, 1.0);
-    slider.setLimitsY(period, 0.5, 30.0);
+    slider.setLimitsY(period, 0.01, 30.0);
     
     for (int i = 0; i < 16; i++) {
       slider.setLocalColor(i, color(255, 0));
@@ -190,11 +206,12 @@ private class LoopingNote {
     
     slider.setLocalColor(6, color(255, 0));
     slider.setLocalColor(15, color(100, 150));
-    slider.setEasing(4);
+    slider.setEasing(30);
     
   }
   
   synchronized void update() {
+    if (disabled) {return;}
     angleDelta = 2*PI/period/win.frameRate;
     //angle descends from 2*PI to 0
     angle -= angleDelta;//period/(2*PI);
@@ -221,6 +238,7 @@ private class LoopingNote {
     }
   }
    synchronized void draw() {
+    if(disabled) return;
     win.noFill();
 
     win.fill(150, 0, 0);
