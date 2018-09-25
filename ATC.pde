@@ -8,11 +8,9 @@
 //TODO: channel drop down menu changes channel output
 
 public class ATC{
-  
   PApplet parent; // The PApplet that created the instance of ATC 
   GWindow win;    // The PApplet that ATC creates for itself
   int fps1; //36
- 
  
   MidiBus bus;    // MidiBus instance (specified in constructor)
   private int channel;  // 1
@@ -29,10 +27,7 @@ public class ATC{
   
   GOption enabledOpts[];
   GToggleGroup enabledToggle;
-  
-  
-  
- 
+
   
   ATC(PApplet parent, MidiBus bus) {
     
@@ -48,7 +43,6 @@ public class ATC{
     
     println(fps1);
    
-    
     fps1 = 36;
     win = GWindow.getWindow(parent, "AirTrafficControl", 100, 100, 800, 600, JAVA2D); 
     //println("THE WINDOW FRAME RATE IS "+ win.frameRate);
@@ -88,12 +82,13 @@ public class ATC{
     //enabledToggle = new GToggleGroup();
     enabledOpts = new GOption[nNotes];
     
-    int xx = 550;
-    int yy = 100;
-    for(int i = 0; i<4; i++){
-      enabledOpts[i] = new GOption(win, xx + i*20, yy, 10, 10);
-      enabledOpts[i+4] = new GOption(win, xx + i*20, yy+20, 10, 10);
-    }
+    
+    //int xx = 550;
+    //int yy = 100;
+    //for(int i = 0; i<4; i++){
+    //  enabledOpts[i] = new GOption(win, xx + i*20, yy, 10, 10);
+    //  enabledOpts[i+4] = new GOption(win, xx + i*20, yy+20, 10, 10);
+    //}
   }
   
   synchronized void draw(){

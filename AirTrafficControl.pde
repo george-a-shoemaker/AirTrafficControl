@@ -34,29 +34,30 @@ String busName; //THIS IS THE NAME OF THE BUS FOR ATC
 int x, y, frame, fps;
 int swidth, sheight;
 
-ArrayList<GWindow> windows; 
-ArrayList<ATC> atcList;
+String[] output_buses;
 
 ATC atc, atc1;
 
-Button addButton;
+//Button addButton;
+GDropList bus_selector;
+GButton bus_refresh;
+GButton launch;
 
 void setup() {
   
-  addButton = new Button("+1 ATC", 50,140,100,50);
+  //addButton = new Button("+1 ATC", 50,140,100,50);
   
   //PROCESSING SETTINGS//
-  fps = 2;
+  fps = 6;
   frameRate(fps);
   
   background(0);
-  swidth  = 300;
-  sheight = 200;
-  size(300, 200);
+  swidth  = 400;
+  sheight = 300;
+  size(400, 300);
   textFont(loadFont("Avenir-HeavyOblique-48.vlw"), 22);
 
   //SETUP MIDI PORT//
-
   busName = "MidiBusATC"; 
   busName = "SimpleSynth virtual input";
   busName = "IAC Bus 1";
@@ -69,45 +70,54 @@ void setup() {
     " either configure a port with that name,\n"+
     " or set the \"busName\" variable to the name of a configured port\n"+
     " in the source code.");
-  MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
+  MidiBus.list(); // List all 11available Midi devices on STDOUT. This will show each device's index and name.
+  
+  //SETUP PORT SELECTION MENU//
+  output_buses = MidiBus.availableOutputs();
+  bus_selector = new GDropList(this, 250,135.0,125.0,100.0,output_buses.length);
+  bus_selector.setItems(output_buses, 0);
+  for (int i=0; i< 2; i++){
+     println("!! "+output_buses[i]);
+  }
+  
+  //SETUP BUS OPTION REFRESH BUTTON//
+  bus_refresh = new GButton(this, 250,115,125,20.0, "Refresh List");
+  
+  
+  //SETUP LAUNCH BUTTON//
+  launch = new GButton(this, 40,180,80,40, "Launch");
+  
+  
   
   myBus = new MidiBus(this, -1, busName);
-  
   atc  = new ATC(this, myBus);
-  atc1 = new ATC(this, myBus);
-  atc1.setChannel(2);
-  windows = new ArrayList<GWindow>();
-  windows.add(atc.win);
-  windows.add(atc1.win);
 }
 
 void draw() {
-  
+ 
   background(0);
 
   stroke(150, 0, 0);
   fill(150, 0, 0);
 
   textSize(30);
-  text("ATC Launcher", 120, 40);
-  textSize(18);
-  
-  
+  text("Welcome to ATC", 25, 40);
+  textSize(16);
   fill(255);
-  text(frameRate, 100, 80);
-  text("Using Bus: \"" + busName + "\"", 100, 110);
-  addButton.Draw();
+  //text("1) Configure a MIDI port that connects to a synth", 10, 100);
+  text("1) Select a port in the menu: ", 10, 150);
+  text("2)", 10, 200);
+  //text(frameRate, 100, 80);
+  //text("Using Bus: \"" + busName + "\"", 100, 110);
+  //addButton.Draw();
   
-  if (addButton.MouseIsOver()) {
-    rect(200, 20, 50, 50);
-  }
+  //if (addButton.MouseIsOver()) {
+  //  rect(200, 20, 50, 50);
+  //}
 }
 
 void mousePressed()
 {
-  if (addButton.MouseIsOver()) {
-    
-  }
 }
 
 
@@ -150,11 +160,6 @@ public void handleSlider2DEvents(GSlider2D slider2d, GEvent event) {
     }
   }
 }
-
-
-
-
- 
 
 void exit() {
   /*
